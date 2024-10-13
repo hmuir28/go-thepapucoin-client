@@ -1,12 +1,13 @@
 package main
 
 import (
-	"bufio"
+	// "bufio"
 	"fmt"
-	"os"
-	"strings"
+	// "os"
+	// "strings"
 
-	server "github.com/hmuir28/go-thepapucoin/p2p"
+	// server "github.com/hmuir28/go-thepapucoin/p2p"
+	"github.com/hmuir28/go-thepapucoin/database"
 )
 
 func main() {
@@ -38,37 +39,42 @@ func main() {
 	// 	fmt.Println()
 	// }
 
-	if len(os.Args) != 3 {
-		fmt.Println("Usage: go-p2p-server <port> <peer_address>")
-		return
-	}
 
-	port := os.Args[1]               // Port to listen on
-	peerAddress := os.Args[2]        // Address of another peer to connect to
-	peerCh := make(chan server.Peer) // Channel to manage connected peers
-	peers := make([]server.Peer, 0)  // Slice to hold connected peers
+	// if len(os.Args) != 3 {
+	// 	fmt.Println("Usage: go-p2p-server <port> <peer_address>")
+	// 	return
+	// }
 
-	// Start the server to listen for incoming connections
-	go server.StartServer(port, peerCh)
+	// port := os.Args[1]               // Port to listen on
+	// peerAddress := os.Args[2]        // Address of another peer to connect to
+	// peerCh := make(chan server.Peer) // Channel to manage connected peers
+	// peers := make([]server.Peer, 0)  // Slice to hold connected peers
 
-	// Connect to an existing peer
-	go server.ConnectToPeer(peerAddress, peerCh)
+	// // Start the server to listen for incoming connections
+	// go server.StartServer(port, peerCh)
 
-	// Start a Goroutine to handle new connections
-	go func() {
-		for peer := range peerCh {
-			fmt.Println("New peer connected:", peer.Address)
-			peers = append(peers, peer)
-			go server.HandlePeerConnection(peer, peerCh) // Handle incoming messages
-		}
-	}()
+	// // Connect to an existing peer
+	// go server.ConnectToPeer(peerAddress, peerCh)
 
-	// Read from stdin to broadcast messages
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("Enter message to broadcast: ")
-		message, _ := reader.ReadString('\n')
-		message = strings.TrimSpace(message)
-		server.BroadcastMessage(peers, message)
-	}
+	// // Start a Goroutine to handle new connections
+	// go func() {
+	// 	for peer := range peerCh {
+	// 		fmt.Println("New peer connected:", peer.Address)
+	// 		peers = append(peers, peer)
+	// 		go server.HandlePeerConnection(peer, peerCh) // Handle incoming messages
+	// 	}
+	// }()
+
+	// // Read from stdin to broadcast messages
+	// reader := bufio.NewReader(os.Stdin)
+	// for {
+	// 	fmt.Print("Enter message to broadcast: ")
+	// 	message, _ := reader.ReadString('\n')
+	// 	message = strings.TrimSpace(message)
+	// 	server.BroadcastMessage(peers, message)
+	// }
+
+	db := database.NewRedisClient()
+
+	fmt.Println(db)
 }
