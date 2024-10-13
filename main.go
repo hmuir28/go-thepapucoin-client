@@ -2,11 +2,14 @@ package main
 
 import (
 	// "bufio"
+	"log"
 	"fmt"
-	// "os"
+	"os"
 	// "strings"
+	"github.com/gin-gonic/gin"
 
 	// server "github.com/hmuir28/go-thepapucoin/p2p"
+	"github.com/hmuir28/go-thepapucoin/routes"
 	"github.com/hmuir28/go-thepapucoin/database"
 )
 
@@ -77,4 +80,16 @@ func main() {
 	db := database.NewRedisClient()
 
 	fmt.Println(db)
+
+	port := os.Getenv("PORT")
+
+	if port == "" {
+		port = "8080"
+	}
+
+	router := gin.New()
+
+	routes.TransferRoutes(router)
+
+	log.Fatal(router.Run(":" + port))
 }
