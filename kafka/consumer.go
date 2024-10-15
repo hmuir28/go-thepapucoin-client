@@ -19,7 +19,7 @@ func Subscriber() {
 	}
 	defer consumer.Close()
 
-	consumer.SubscribeTopics([]string{"send-money-topic"}, nil)
+	consumer.SubscribeTopics([]string{"send-thepapucoin-topic"}, nil)
 
 	fmt.Println("Waiting for messages...")
 

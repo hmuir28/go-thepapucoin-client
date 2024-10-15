@@ -15,7 +15,7 @@ func SendMessage() {
 
 	defer producer.Close()
 
-	topic := "send-money-topic"
+	topic := "send-thepapucoin-topic"
 	message := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
 		Value:          []byte("Hello Kafka from Golang!"),

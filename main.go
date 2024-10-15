@@ -7,6 +7,7 @@ import (
 	// "os"
 	// "strings"
 	// "github.com/gin-gonic/gin"
+	"time"
 
 	// server "github.com/hmuir28/go-thepapucoin/p2p"
 	// "github.com/hmuir28/go-thepapucoin/routes"
@@ -94,5 +95,9 @@ func main() {
 
 	// log.Fatal(router.Run(":" + port))
 
-	kafka.Subscriber()
+	go kafka.Subscriber()
+
+	time.Sleep(10 * time.Second)
+
+	kafka.SendMessage()
 }
