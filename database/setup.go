@@ -24,9 +24,11 @@ func NewRedisClient() *redis.Client {
 
     // Check if the connection is successful
     _, err := client.Ping(context.Background()).Result()
-    if err != nil {
+
+	if err != nil {
         log.Fatalf("Could not connect to Redis: %v", err)
     }
+
     fmt.Println("Connected to Redis!")
     return client
 }

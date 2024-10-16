@@ -3,11 +3,13 @@ package kafka
 import (
 	"fmt"
 	"log"
-
+	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
+
+	"github.com/hmuir28/go-thepapucoin/models"
 )
 
-func SendMessage() {
+func SendMessage(transaction models.Transaction) {
 	producer, err := kafka.NewProducer(&kafka.ConfigMap{"bootstrap.servers": "localhost:9092"})
 	if err != nil {
 		log.Fatalf("Failed to create producer: %s", err)
@@ -15,10 +17,15 @@ func SendMessage() {
 
 	defer producer.Close()
 
+    transactionBytes, err := json.Marshal(transaction)
+    if err != nil {
+        log.Fatalf("Error marshaling struct: %v", err)
+    }
+
 	topic := "send-thepapucoin-topic"
 	message := &kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &topic, Partition: kafka.PartitionAny},
-		Value:          []byte("Hello Kafka from Golang!"),
+		Value:          transactionBytes,
 	}
 
 	err = producer.Produce(message, nil)

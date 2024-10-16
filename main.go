@@ -2,15 +2,14 @@ package main
 
 import (
 	// "bufio"
-	// "log"
+	"log"
 	// "fmt"
-	// "os"
+	"os"
 	// "strings"
-	// "github.com/gin-gonic/gin"
-	"time"
+	"github.com/gin-gonic/gin"
 
 	// server "github.com/hmuir28/go-thepapucoin/p2p"
-	// "github.com/hmuir28/go-thepapucoin/routes"
+	"github.com/hmuir28/go-thepapucoin/routes"
 	// "github.com/hmuir28/go-thepapucoin/database"
 	"github.com/hmuir28/go-thepapucoin/kafka"
 )
@@ -79,25 +78,17 @@ func main() {
 	// 	server.BroadcastMessage(peers, message)
 	// }
 
-	// db := database.NewRedisClient()
+	port := os.Getenv("PORT")
 
-	// fmt.Println(db)
-
-	// port := os.Getenv("PORT")
-
-	// if port == "" {
-	// 	port = "8080"
-	// }
-
-	// router := gin.New()
-
-	// routes.TransferRoutes(router)
-
-	// log.Fatal(router.Run(":" + port))
+	if port == "" {
+		port = "8005"
+	}
 
 	go kafka.Subscriber()
 
-	time.Sleep(10 * time.Second)
+	router := gin.New()
 
-	kafka.SendMessage()
+	routes.TransferRoutes(router)
+
+	log.Fatal(router.Run(":" + port))
 }

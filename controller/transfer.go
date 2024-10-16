@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 
 	"github.com/hmuir28/go-thepapucoin/models"
+	"github.com/hmuir28/go-thepapucoin/kafka"
 )
 
 var validate = validator.New()
@@ -32,6 +33,8 @@ func SendMoney() gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{"error": validationErr})
 			return
 		}
+
+		kafka.SendMessage(transaction)
 
 		c.JSON(http.StatusCreated, "Successfully transfered!")
 	}
