@@ -1,14 +1,11 @@
 package main
 
 import (
-	// "bufio"
 	"log"
-	// "fmt"
 	"os"
-	// "strings"
 	"github.com/gin-gonic/gin"
 
-	// server "github.com/hmuir28/go-thepapucoin/p2p"
+	"github.com/hmuir28/go-thepapucoin/p2p"
 	"github.com/hmuir28/go-thepapucoin/routes"
 	// "github.com/hmuir28/go-thepapucoin/database"
 	"github.com/hmuir28/go-thepapucoin/kafka"
@@ -43,41 +40,6 @@ func main() {
 	// 	fmt.Println()
 	// }
 
-
-	// if len(os.Args) != 3 {
-	// 	fmt.Println("Usage: go-p2p-server <port> <peer_address>")
-	// 	return
-	// }
-
-	// port := os.Args[1]               // Port to listen on
-	// peerAddress := os.Args[2]        // Address of another peer to connect to
-	// peerCh := make(chan server.Peer) // Channel to manage connected peers
-	// peers := make([]server.Peer, 0)  // Slice to hold connected peers
-
-	// // Start the server to listen for incoming connections
-	// go server.StartServer(port, peerCh)
-
-	// // Connect to an existing peer
-	// go server.ConnectToPeer(peerAddress, peerCh)
-
-	// // Start a Goroutine to handle new connections
-	// go func() {
-	// 	for peer := range peerCh {
-	// 		fmt.Println("New peer connected:", peer.Address)
-	// 		peers = append(peers, peer)
-	// 		go server.HandlePeerConnection(peer, peerCh) // Handle incoming messages
-	// 	}
-	// }()
-
-	// // Read from stdin to broadcast messages
-	// reader := bufio.NewReader(os.Stdin)
-	// for {
-	// 	fmt.Print("Enter message to broadcast: ")
-	// 	message, _ := reader.ReadString('\n')
-	// 	message = strings.TrimSpace(message)
-	// 	server.BroadcastMessage(peers, message)
-	// }
-
 	port := os.Getenv("PORT")
 
 	if port == "" {
@@ -85,6 +47,7 @@ func main() {
 	}
 
 	go kafka.Subscriber()
+	go p2p.StartServer()
 
 	router := gin.New()
 

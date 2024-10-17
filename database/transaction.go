@@ -10,8 +10,24 @@ import (
 	"github.com/hmuir28/go-thepapucoin/models"
 )
 
-func InsertRecord(ctx context.Context, client *redis.Client, transaction models.Transaction) {
+func GetTransactionsInMemory(ctx context.Context, client *redis.Client) []models.Transaction {
+    existingTransactions, err := client.Get(ctx, "transactions").Result()
+    var unmarshaledTransactions []models.Transaction
 
+	if err != nil {
+		return []models.Transactions{}
+	} else {
+		err = json.Unmarshal([]byte(existingTransactions), &unmarshaledTransactions)
+
+		if err != nil {
+			log.Fatalf("Error unmarshaling transactions: %v", err)
+		}
+
+		return unmarshaledTransactions
+	}
+}
+
+func InsertRecord(ctx context.Context, client *redis.Client, transaction models.Transaction) {
     existingTransactions, err := client.Get(ctx, "transactions").Result()
     var unmarshaledTransactions []models.Transaction
 

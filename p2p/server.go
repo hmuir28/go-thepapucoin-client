@@ -1,14 +1,21 @@
 package p2p
 
 import (
+	"bufio"
 	"fmt"
 	"net"
 	"os"
+	"strings"
 )
 
 type Peer struct {
 	Address string
 	Conn    net.Conn
+}
+
+
+type Server struct {
+	peers []*Peer
 }
 
 func BroadcastMessage(peers []Peer, message string) {
@@ -53,7 +60,7 @@ func HandlePeerConnection(peer Peer, peerCh chan<- Peer) {
 	}
 }
 
-func StartServer(port string, peerCh chan<- Peer) {
+func SetUpServer(port string, peerCh chan<- Peer) {
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
@@ -75,5 +82,41 @@ func StartServer(port string, peerCh chan<- Peer) {
 			Conn:    conn,
 		}
 		peerCh <- peer
+	}
+}
+
+func StartServer(p2pServer *Server) {
+	if len(os.Args) != 3 {
+		fmt.Println("Usage: go-p2p-server <port> <peer_address>")
+		return
+	}
+
+	port := os.Args[1]               // Port to listen on
+	peerAddress := os.Args[2]        // Address of another peer to connect to
+	peerCh := make(chan Peer) // Channel to manage connected peers
+	// peers := make([]Peer, 0)  // Slice to hold connected peers
+
+	// Start the server to listen for incoming connections
+	go StartServer(port, peerCh)
+
+	// Connect to an existing peer
+	go ConnectToPeer(peerAddress, peerCh)
+
+	// Start a Goroutine to handle new connections
+	go func() {
+		for peer := range peerCh {
+			fmt.Println("New peer connected:", peer.Address)
+			p2pServer.peers = append(p2pServer.peers, peer)
+			go HandlePeerConnection(peer, peerCh) // Handle incoming messages
+		}
+	}()
+
+	// Read from stdin to broadcast messages
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("Enter message to broadcast: ")
+		message, _ := reader.ReadString('\n')
+		message = strings.TrimSpace(message)
+		BroadcastMessage(p2pServer.peers, message)
 	}
 }

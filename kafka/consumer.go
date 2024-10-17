@@ -25,7 +25,6 @@ func Subscriber() {
 
 	consumer.SubscribeTopics([]string{"send-thepapucoin-topic"}, nil)
 
-	fmt.Println("Waiting for messages...")
 	newInstance := database.NewRedisClient()
 	var ctx = context.Background()
 
@@ -44,6 +43,8 @@ func Subscriber() {
         }
 
 		database.InsertRecord(ctx, newInstance, transaction)
+
+
 	}
 }
 
