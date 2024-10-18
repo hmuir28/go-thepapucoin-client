@@ -1,11 +1,18 @@
 package p2p
 
 import (
+	// "crypto/sha256"
+	"context"
 	"bufio"
 	"fmt"
 	"net"
 	"os"
 	"strings"
+	"github.com/redis/go-redis/v9"
+
+	"github.com/hmuir28/go-thepapucoin/database"
+	"github.com/hmuir28/go-thepapucoin/crypto"
+	"github.com/hmuir28/go-thepapucoin/miner"
 )
 
 type Peer struct {
@@ -94,7 +101,7 @@ func SetUpServer(port string, peerCh chan<- Peer) {
 	}
 }
 
-func StartServer(p2pServer *P2PServer) {
+func StartServer(ctx context.Context, p2pServer *P2PServer, redisClient *redis.Client) {
 	if len(os.Args) != 3 {
 		fmt.Println("Usage: go-p2p-server <port> <peer_address>")
 		return
@@ -126,6 +133,42 @@ func StartServer(p2pServer *P2PServer) {
 		fmt.Print("Enter message to broadcast: ")
 		message, _ := reader.ReadString('\n')
 		message = strings.TrimSpace(message)
-		BroadcastMessage(p2pServer.peers, message)
+
+		if message == "mine" {
+			transactions := database.GetTransactionsInMemory(ctx, redisClient)
+
+			if len(transactions) != 0 {
+
+				// Create the blockchain with a genesis block
+				genesisBlock := crypto.GenesisBlock()
+				genesisBlock.Hash = genesisBlock.CalculateHash()
+				blockchain := miner.Blockchain{[]crypto.Block{genesisBlock}}
+
+				fmt.Println("Start mining")
+
+				fmt.Println(transactions)
+
+				// Add a new block with proof of work
+				blockchain.AddBlockWithPoW(transactions, 2)
+				fmt.Println("Finished mining")
+
+				// Print the blockchain
+				for _, block := range blockchain.Blocks {
+					fmt.Printf("Index: %d\n", block.Index)
+					fmt.Printf("Timestamp: %s\n", block.Timestamp)
+					fmt.Printf("PreviousHash: %s\n", block.PreviousHash)
+					fmt.Printf("Hash: %s\n", block.Hash)
+					fmt.Printf("Nonce: %d\n", block.Nonce)
+					fmt.Println("Transactions:")
+					for _, tx := range block.Transactions {
+						fmt.Printf("\t%s sent %f to %s\n", tx.Sender, tx.Amount, tx.Recipient)
+					}
+					fmt.Println()
+				}
+
+			}
+		} else {
+			BroadcastMessage(p2pServer.peers, message)
+		}
 	}
 }

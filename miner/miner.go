@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hmuir28/go-thepapucoin/models"
 	"github.com/hmuir28/go-thepapucoin/crypto"
 )
 
@@ -22,7 +23,7 @@ func (miner *Miner) ProofOfWork(difficulty int) {
 }
 
 // CreateBlockWithPoW creates a new block with proof of work
-func CreateBlockWithPoW(prevBlock crypto.Block, transactions []crypto.Transaction, difficulty int) Miner {
+func CreateBlockWithPoW(prevBlock crypto.Block, transactions []models.Transaction, difficulty int) Miner {
 	block := crypto.Block{
 		Index:        prevBlock.Index + 1,
 		Timestamp:    time.Now().String(),

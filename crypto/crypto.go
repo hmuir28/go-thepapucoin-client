@@ -5,20 +5,15 @@ import (
 	"encoding/hex"
 	"fmt"
 	"time"
-)
 
-// Transaction represents a single transaction in the blockchain
-type Transaction struct {
-	Sender    string
-	Recipient string
-	Amount    float64
-}
+	"github.com/hmuir28/go-thepapucoin/models"
+)
 
 // Block represents each block in the blockchain
 type Block struct {
 	Index        int
 	Timestamp    string
-	Transactions []Transaction
+	Transactions []models.Transaction
 	PreviousHash string
 	Hash         string
 	Nonce        int // Add Nonce to keep track of Proof of Work
@@ -37,7 +32,7 @@ func (b *Block) CalculateHash() string {
 }
 
 // CreateBlock creates a new block
-func CreateBlock(prevBlock Block, transactions []Transaction) Block {
+func CreateBlock(prevBlock Block, transactions []models.Transaction) Block {
 	block := Block{
 		Index:        prevBlock.Index + 1,
 		Timestamp:    time.Now().String(),
@@ -53,7 +48,7 @@ func GenesisBlock() Block {
 	return Block{
 		Index:        0,
 		Timestamp:    time.Now().String(),
-		Transactions: []Transaction{},
+		Transactions: []models.Transaction{},
 		PreviousHash: "0",
 		Hash:         "",
 		Nonce:        0,
@@ -61,6 +56,6 @@ func GenesisBlock() Block {
 }
 
 // Create a new transaction
-func NewTransaction(sender, recipient string, amount float64) Transaction {
-	return Transaction{Sender: sender, Recipient: recipient, Amount: amount}
+func NewTransaction(sender, recipient string, amount float64) models.Transaction {
+	return models.Transaction{Sender: sender, Recipient: recipient, Amount: amount}
 }
