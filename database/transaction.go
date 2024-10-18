@@ -15,7 +15,7 @@ func GetTransactionsInMemory(ctx context.Context, client *redis.Client) []models
     var unmarshaledTransactions []models.Transaction
 
 	if err != nil {
-		return []models.Transactions{}
+		return []models.Transaction{}
 	} else {
 		err = json.Unmarshal([]byte(existingTransactions), &unmarshaledTransactions)
 

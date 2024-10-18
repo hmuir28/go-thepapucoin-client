@@ -9,9 +9,10 @@ import (
 
 	"github.com/hmuir28/go-thepapucoin/models"
 	"github.com/hmuir28/go-thepapucoin/database"
+	"github.com/hmuir28/go-thepapucoin/p2p"
 )
 
-func Subscriber() {
+func Subscriber(p2pServer *p2p.P2PServer) {
 	consumer, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": "localhost:9092",
 		"group.id":          "my-group",
@@ -44,7 +45,13 @@ func Subscriber() {
 
 		database.InsertRecord(ctx, newInstance, transaction)
 
+		// if there are transactions let the peer folks know
 
+		peers := p2pServer.GetPeers()
+		
+		fmt.Println("--------------- how many peers")
+		fmt.Println(peers)
+		p2p.BroadcastMessage(peers, "There is a new transaction")
 	}
 }
 

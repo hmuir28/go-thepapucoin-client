@@ -1,12 +1,7 @@
 package main
 
 import (
-	"log"
-	"os"
-	"github.com/gin-gonic/gin"
-
 	"github.com/hmuir28/go-thepapucoin/p2p"
-	"github.com/hmuir28/go-thepapucoin/routes"
 	// "github.com/hmuir28/go-thepapucoin/database"
 	"github.com/hmuir28/go-thepapucoin/kafka"
 )
@@ -40,18 +35,11 @@ func main() {
 	// 	fmt.Println()
 	// }
 
-	port := os.Getenv("PORT")
+	p2pServer := p2p.NewP2PServer()
 
-	if port == "" {
-		port = "8005"
-	}
+	go kafka.Subscriber(p2pServer)
+	
+	p2p.StartServer(p2pServer)
 
-	go kafka.Subscriber()
-	go p2p.StartServer()
-
-	router := gin.New()
-
-	routes.TransferRoutes(router)
-
-	log.Fatal(router.Run(":" + port))
+	for{}
 }

@@ -13,9 +13,12 @@ type Peer struct {
 	Conn    net.Conn
 }
 
+type P2PServer struct {
+	peers []Peer
+}
 
-type Server struct {
-	peers []*Peer
+func (p2pServer P2PServer) GetPeers() []Peer {
+	return p2pServer.peers
 }
 
 func BroadcastMessage(peers []Peer, message string) {
@@ -27,6 +30,12 @@ func BroadcastMessage(peers []Peer, message string) {
 		}
 	}
 	fmt.Println("Message broadcasted:", message)
+}
+
+func NewP2PServer() *P2PServer {
+    return &P2PServer{
+        peers: []Peer{},
+    }
 }
 
 func ConnectToPeer(address string, peerCh chan<- Peer) {
@@ -85,7 +94,7 @@ func SetUpServer(port string, peerCh chan<- Peer) {
 	}
 }
 
-func StartServer(p2pServer *Server) {
+func StartServer(p2pServer *P2PServer) {
 	if len(os.Args) != 3 {
 		fmt.Println("Usage: go-p2p-server <port> <peer_address>")
 		return
@@ -97,7 +106,7 @@ func StartServer(p2pServer *Server) {
 	// peers := make([]Peer, 0)  // Slice to hold connected peers
 
 	// Start the server to listen for incoming connections
-	go StartServer(port, peerCh)
+	go SetUpServer(port, peerCh)
 
 	// Connect to an existing peer
 	go ConnectToPeer(peerAddress, peerCh)
