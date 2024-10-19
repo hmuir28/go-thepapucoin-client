@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	// "time"
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/redis/go-redis/v9"
@@ -45,7 +46,6 @@ func Subscriber(ctx context.Context, p2pServer *p2p.P2PServer, redisClient *redi
 
 		peers := p2pServer.GetPeers()
 		
-		p2p.BroadcastMessage(peers, "There is a new transaction")
+		p2p.BroadcastMessage(peers, "new_transaction")		
 	}
 }
-

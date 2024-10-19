@@ -10,6 +10,21 @@ import (
 	"github.com/hmuir28/go-thepapucoin/models"
 )
 
+func CleanUpTransactions(ctx context.Context, client *redis.Client) error {
+	result, err := client.Del(ctx, "transactions").Result()
+	if err != nil {
+		return fmt.Errorf("error deleting transactions: %v", err)
+	}
+
+	if result == 0 {
+		fmt.Printf("Transactions do not exist\n")
+	} else {
+		fmt.Printf("Transactions deleted successfully\n")
+	}
+
+	return nil
+}
+
 func GetTransactionsInMemory(ctx context.Context, client *redis.Client) []models.Transaction {
     existingTransactions, err := client.Get(ctx, "transactions").Result()
     var unmarshaledTransactions []models.Transaction
