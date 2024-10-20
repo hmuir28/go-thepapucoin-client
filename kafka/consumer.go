@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strconv"
 	// "time"
 	"encoding/json"
 	"github.com/confluentinc/confluent-kafka-go/kafka"
@@ -35,17 +37,35 @@ func Subscriber(ctx context.Context, p2pServer *p2p.P2PServer, redisClient *redi
 			continue
 		}
 
-        var transaction models.Transaction
-        err = json.Unmarshal(msg.Value, &transaction)
+        var message models.P2PServerMessage
+        err = json.Unmarshal(msg.Value, &message)
         if err != nil {
             fmt.Printf("Failed to unmarshal message: %v\n", err)
             continue
         }
 
-		database.InsertRecord(ctx, redisClient, transaction)
+		database.InsertRecord(ctx, redisClient, message.Transaction)
 
-		peers := p2pServer.GetPeers()
-		
-		p2p.BroadcastMessage(peers, "new_transaction")		
+		strTransactionsCountDealine := os.Getenv("TRANSACTIONS_COUNT_DEALINE")
+		var transactionsCountDeadline int
+
+		if strTransactionsCountDealine == "" {
+			strTransactionsCountDealine = "5"
+		}
+
+		transactionsCountDeadline, _ = strconv.Atoi(strTransactionsCountDealine)
+		transactions := database.GetTransactionsInMemory(ctx, redisClient)
+
+		fmt.Println("Message received from kafka")
+
+		if len(transactions) >= transactionsCountDeadline {
+			peer, err := p2p.FindPeerByAddress(p2pServer.Peers, message.PeerAddress)
+	
+			if err != nil {
+				log.Fatalf("Could not find the peer server: %v", err)
+			}
+
+			p2p.BroadcastMessage([]p2p.Peer{ *peer }, "new_transaction")	
+		}
 	}
 }
