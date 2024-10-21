@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"log"
 	"strconv"
 	"strings"
 	"github.com/redis/go-redis/v9"
@@ -31,6 +30,7 @@ func (p2pServer P2PServer) GetPeers() []Peer {
 
 func FindPeerByAddress(peers []Peer, address string) (*Peer, error) {
 	for _, peer := range peers {
+		fmt.Printf("Consumer Address %s , Peer Address %s \n", address, peer.Address)
 		if peer.Address == address {
 			return &peer, nil
 		}
@@ -136,12 +136,6 @@ func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pSer
 				BroadcastMessage(p2pServer.Peers, "complete_mine")
 				fmt.Println()
 			}
-		case "complete_mine":
-			err := database.CleanUpTransactions(ctx, redisClient)
-
-			if err != nil {
-				log.Fatalf("Could not clean up transactions in Redis: %v", err)
-			}
 			break
 		default:
 			break
@@ -188,19 +182,6 @@ func StartServer(ctx context.Context, p2pServer *P2PServer, redisClient *redis.C
 
 	// Start the server to listen for incoming connections
 	go SetUpServer(port, peerCh)
-
-	if peerAddress == "" {
-		peer := Peer{
-			Address: "main_p2p_server",
-			Conn:    nil,
-		}
-
-		fmt.Println("---------")
-		fmt.Println(peer)
-		fmt.Println("---------")
-
-		p2pServer.Peers = append(p2pServer.Peers, peer)
-	}
 
 	// Connect to an existing peer
 	go ConnectToPeer(peerAddress, peerCh)
