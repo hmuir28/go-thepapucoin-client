@@ -107,7 +107,7 @@ func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pSer
 				blockchain := miner.Blockchain{[]crypto.Block{genesisBlock}}
 
 				fmt.Println("Start mining")
-
+ 
 				strDifficulty := os.Getenv("BLOCK_MINE_DIFFICULTY")
 
 				if strDifficulty == "" {
@@ -121,21 +121,13 @@ func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pSer
 
 				fmt.Println("Finished mining")
 
-				// Print the blockchain
-				// for _, block := range blockchain.Blocks {
-					// fmt.Println("Transactions:")
-
-					// for _, tx := range block.Transactions {
-						// transactionMsg := fmt.Sprintf("\t%s sent %f to %s\n", tx.Sender, tx.Amount, tx.Recipient)
-
-						
-					// }
-					// BroadcastMessage(p2pServer.peers, "complete_mine")
-					// fmt.Println()
-				// }
 				BroadcastMessage(p2pServer.Peers, "complete_mine")
-				fmt.Println()
 			}
+			break
+		case "stop_mine":
+
+
+
 			break
 		default:
 			break
