@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"log"
 	"strconv"
 	"strings"
-	"github.com/redis/go-redis/v9"
+	"encoding/json"
 
-	"github.com/hmuir28/go-thepapucoin/database"
+	"github.com/hmuir28/go-thepapucoin/models"
 	"github.com/hmuir28/go-thepapucoin/crypto"
 	"github.com/hmuir28/go-thepapucoin/miner"
 )
@@ -75,7 +76,7 @@ func ConnectToPeer(address string, peerCh chan<- Peer) {
 	fmt.Println("Connected to peer:", address)
 }
 
-func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pServer *P2PServer, peer Peer, peerCh chan<- Peer) {
+func HandlePeerConnection(ctx context.Context, p2pServer *P2PServer, peer Peer, peerCh chan<- Peer) {
 	buf := make([]byte, 1024)
 	for {
 		if peer.Conn == nil {
@@ -93,11 +94,18 @@ func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pSer
 		message := string(buf[:n])
 		fmt.Printf("Message from %s: %s", peer.Address, message)
 
-		parsedMessage := strings.TrimSpace(message)
+		splittedMessage := strings.Split(message, "&")
 
-		switch parsedMessage {
+		trimmedMessage := strings.TrimSpace(splittedMessage[0])
+
+		switch trimmedMessage {
 		case "new_transaction":
-			transactions := database.GetTransactionsInMemory(ctx, redisClient)
+			var transactions []models.Transaction
+
+			err := json.Unmarshal([]byte(splittedMessage[1]), &transactions)
+			if err != nil {
+				log.Fatalf("Error decoding transactions: %v", err)
+			}
 
 			if len(transactions) != 0 {
 
@@ -120,14 +128,9 @@ func HandlePeerConnection(ctx context.Context, redisClient *redis.Client, p2pSer
 				blockchain.AddBlockWithPoW(transactions, difficulty)
 
 				fmt.Println("Finished mining")
-
+				
 				BroadcastMessage(p2pServer.Peers, "complete_mine")
 			}
-			break
-		case "stop_mine":
-
-
-
 			break
 		default:
 			break
@@ -162,7 +165,7 @@ func SetUpServer(port string, peerCh chan<- Peer) {
 	}
 }
 
-func StartServer(ctx context.Context, p2pServer *P2PServer, redisClient *redis.Client) {
+func StartServer(ctx context.Context, p2pServer *P2PServer) {
 	if len(os.Args) != 3 {
 		fmt.Println("Usage: go-p2p-server <port> <peer_address>")
 		return
@@ -183,7 +186,7 @@ func StartServer(ctx context.Context, p2pServer *P2PServer, redisClient *redis.C
 		for peer := range peerCh {
 			fmt.Println("New peer connected:", peer.Address)
 			p2pServer.Peers = append(p2pServer.Peers, peer)
-			go HandlePeerConnection(ctx, redisClient, p2pServer, peer, peerCh) // Handle incoming messages
+			go HandlePeerConnection(ctx, p2pServer, peer, peerCh) // Handle incoming messages
 		}
 	}()
 
